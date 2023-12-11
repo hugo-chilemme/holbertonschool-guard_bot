@@ -28,12 +28,16 @@ async function handleLoadUsers() {
 			userIds.splice(index, 1); 
 		}
 
-		const instUser = new User(user, member);
 
-		users[user.id] = instUser;
-		users[member.user.id] = instUser;
-		users[user.slack_id] = instUser;
-		
+		if (!users[user.id])
+		{
+			const instUser = new User(user, member);
+
+			users[user.id] = instUser;
+			users[member.user.id] = instUser;
+			users[user.slack_id] = instUser;
+		}
+		users[user.id].user = user; //refresh data 
 	}
 
 	for (const id of userIds)

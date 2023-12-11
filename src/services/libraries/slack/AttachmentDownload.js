@@ -31,4 +31,4 @@
 			return { attachment: imagePreview, name: fileName};
 		}
 		return false;
-	}
+	} 

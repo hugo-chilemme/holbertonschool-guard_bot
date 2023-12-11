@@ -7,7 +7,6 @@ const config = require('../../config');
 class User {
 
 	constructor(user, member) {
-		console.log(user, member)
 		this.user = user;
 		this.member = member;
 

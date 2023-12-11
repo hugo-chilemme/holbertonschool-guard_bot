@@ -32,6 +32,7 @@ async function handleLoadUsers() {
 
 		users[user.id] = instUser;
 		users[member.user.id] = instUser;
+		users[user.slack_id] = instUser;
 		
 	}
 

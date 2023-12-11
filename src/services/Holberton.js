@@ -1,4 +1,5 @@
-const GatewayService = require('./__init__');
+const GatewayService = require('./GatewayService');
+const { HOLBERTON_TOKEN } = require('../config');
 
 module.exports = async (event, params = {}) => {
 
@@ -6,7 +7,7 @@ module.exports = async (event, params = {}) => {
 
 	const API_URI = `https://hbtn.hugochilemme.com/api/${event}`;
 	const headers = {
-		'secret-client': 'fdWnfpmcCNPiRbq5dinppyByAcykandUGSn9DtJWFCykJE4v5WNQ9WNF8jrvsh3c',
+		'secret-client': HOLBERTON_TOKEN,
         'accept': 'application/json'
     };
 

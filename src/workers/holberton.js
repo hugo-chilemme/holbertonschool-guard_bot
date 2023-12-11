@@ -1,5 +1,5 @@
 const ApiController = require('../services/Holberton');
-const User = require('../services/User.class');
+const User = require('../services/classes/User');
 const { _removeRole } = require('../services/functions/discordRolesUtils');
 
 
@@ -12,7 +12,6 @@ async function handleLoadUsers() {
 	console.log('Holberton ↪', `${usersEligibility.length} users received`);
 	
 	for (let user of usersEligibility) {
-		
 		let member = members.find(u => 
 			u.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
 		);
@@ -29,10 +28,10 @@ async function handleLoadUsers() {
 			userIds.splice(index, 1); 
 		}
 
-		const user = new User(user, member);
+		const instUser = new User(user, member);
 
-		users[user.id] = user;
-		users[member.user.id] = user;
+		users[user.id] = instUser;
+		users[member.user.id] = instUser;
 		
 	}
 

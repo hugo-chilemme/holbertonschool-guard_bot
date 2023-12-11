@@ -1,6 +1,6 @@
-const getUserStatus = require('./functions/getUserStatus');
-const ApiController = require('./Holberton');
-const { _addRole, _removeRole, _sendMessage } = require('./functions/discordRolesUtils');
+const getUserStatus = require('../functions/getUserStatus');
+const ApiController = require('../Holberton');
+const { _addRole, _removeRole, _sendMessage } = require('../functions/discordRolesUtils');
 
 class User {
 
@@ -27,6 +27,7 @@ class User {
 
 		this._synchronization();
 		this._celebrateBirthday();
+
 	}
 
 	_synchronization() {
@@ -70,8 +71,6 @@ class User {
 		const age = today_date.getFullYear() - years;
 		_sendMessage('976357520895528965', `"Il célèbre aujourd'hui son ${age}e anniversaire, souhaitons tous un joyeux anniversaire à <@${this.member.user.id}>. :partying_face: <@&1143248679180972053>`)
 	}
-
-
 
 }
 

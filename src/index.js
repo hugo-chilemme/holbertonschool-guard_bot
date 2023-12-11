@@ -1,13 +1,7 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const { DISCORD_TOKEN } = require('./config');
 const fs = require('fs');
 const path = require('path');
 
-const system = require('./system');
-global.SystemService = new system();
-
-global.discord = new Client({ intents: Object.values(GatewayIntentBits).filter(value => typeof value !== 'number'), partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-global.members = {};
+const discord = require('./classes/HBClient');
 global.users = {};
 global.roles = {};
 // Load all files in the events/ directory
@@ -41,5 +35,3 @@ fs.readdirSync(workersPath).forEach(file => {
 		console.error(e);
 	}
 });
-
-discord.login(DISCORD_TOKEN);

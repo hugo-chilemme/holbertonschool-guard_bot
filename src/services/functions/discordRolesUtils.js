@@ -1,4 +1,4 @@
-
+const discord = require('../../classes/HBClient');
 
 exports._addRole = async function _addRole(member, role) {
 	try {
@@ -22,13 +22,13 @@ exports._removeRole = async function _removeRole(member, role) {
 	} catch(e) {
 		console.log(e.message);
 	}
-} 
+}
 
 
 exports._sendMessage = async function _sendMessage(channelId, content) {
 	try {
 		if (!channelId || !content) return;
-		const server = discord.guilds.cache.get('976357520895528960');
+		const server = discord.cache.getGuild();
 		if (!server) return;
 		const channel = server.channels.cache.get(channelId);
 		if (!channel) return;
@@ -37,4 +37,4 @@ exports._sendMessage = async function _sendMessage(channelId, content) {
 	} catch(e) {
 		console.log(e.message);
 	}
-} 
+}

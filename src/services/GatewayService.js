@@ -1,6 +1,5 @@
 const axios = require('axios');
 
-
 module.exports = async (API_URI, params, headers) => {
 
 	const REQ_START = new Date().getTime();
@@ -8,7 +7,7 @@ module.exports = async (API_URI, params, headers) => {
 
 	try {
 		const response = await axios.get(API_URI, { params, headers });
-	  
+
 		const REQ_STOP = new Date().getTime();
 		const totalDuration = REQ_STOP - REQ_START;
 

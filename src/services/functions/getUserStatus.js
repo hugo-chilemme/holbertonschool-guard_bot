@@ -1,5 +1,3 @@
-
-
 function getDateStart(monthAndYear) {
 	const day = '08';
 	const [ month, year ] = monthAndYear.split(/(..)/g).filter(s => s);
@@ -7,7 +5,7 @@ function getDateStart(monthAndYear) {
 
 	const date = new Date();
 	date.setYear('20' + year);
-	date.setMonth(parseInt(month) - 1); 
+	date.setMonth(parseInt(month) - 1);
 	date.setDate(day);
 	date.setMinutes(0);
 	date.setSeconds(0);

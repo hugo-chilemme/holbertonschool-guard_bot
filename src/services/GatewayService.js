@@ -16,7 +16,6 @@ module.exports = async (API_URI, params, headers) => {
 	} catch (e) {
 		const REQ_STOP = new Date().getTime();
 		console.log(`\x1b[32m✕  \x1b[90mEvent: ${API_URI} (Status: Failed, Time: ${((REQ_STOP - REQ_START) / 1000).toFixed(2)}s)\x1b[0m`);
-		console.error(e);
 		return null;
 	}
 

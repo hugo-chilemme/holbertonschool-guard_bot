@@ -9,6 +9,8 @@ class User {
 	constructor(user, member) {
 		this.user = user;
 		this.member = member;
+		this.message_experience = {};
+		this.help_experience = {};
 
 		this.user.discord_id = member.user.id;
 		this._config();
@@ -26,6 +28,10 @@ class User {
 
 		if (this.user.cache.fundamental_cohort && this.user.cache.fundamental_cohort.length >= 4)
 			this.cohortName = this.user.cache.fundamental_cohort;
+
+
+		this.message_experience = this._setExperience(this.user.cache.message_experience);
+		this.help_experience = this._setExperience(this.user.cache.help_experience);
 
 		this._synchronization();
 		this._celebrateBirthday();
@@ -73,6 +79,29 @@ class User {
 		const age = today_date.getFullYear() - years;
 		_sendMessage(config.BIRTHDAY_CHANNEL, `"Il célèbre aujourd'hui son ${age}e anniversaire, souhaitons tous un joyeux anniversaire à <@${this.member.user.id}>. :partying_face: <@&1143248679180972053>`)
 	}
+
+	/**
+	 * Set experience data
+	 * @param {object} experience
+	 * @returns {object}
+	 */
+	_setExperience(experience) {
+		return experience ? {
+			"level": experience.level || 0,
+			"next_level_xp": experience.next_level_xp || 200,
+			"xp": experience.xp || 0,
+			"total_messages": experience.total_messages || 0,
+			"average_message_length": experience.average_message_length || 0,
+			"total_xp": experience.total_xp || 0,
+		} : {
+			"level": 0,
+			"next_level_xp": 200,
+			"xp": 0,
+			"total_messages": 0,
+			"average_message_length": 0,
+			"total_xp": 0,
+		};
+	};
 
 }
 

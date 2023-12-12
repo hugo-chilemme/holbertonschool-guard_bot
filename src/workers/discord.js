@@ -1,18 +1,50 @@
+const EventService = require('../services/EventService');
+const discord = require('../classes/HBClient');
+const { Events, Guild, Collection } = require('discord.js');
+const config = require('../config');
 
+/**
+ * Load and store members from guild
+ * @param {Guild} guild
+ * @returns {Promise<Collection<string, GuildMember>>}
+ */
+async function loadMembers(guild) {
+	discord.cache.set('members', await guild.members.fetch());
+	return discord.cache.getMembers();
+};
 
-async function handleLoadMembers() {
-	const server = await discord.guilds.cache.get('976357520895528960');
-	members = await server.members.fetch();
+/**
+ * Load and store roles from guild
+ * @param {Guild} guild
+ */
+async function loadRoles(guild) {
+	const roles = await guild.roles.fetch();
+	const cache = new Collection();
+	cache.set('cohorts', roles.filter(role => role.name.match(/^C#\d+$/)));
+	cache.set('specialization', roles.find(role => role.id === config.ROLE_SPECIALIZATION));
+	cache.set('ActiveStudent', roles.find(role => role.id === config.ROLE_ACTIVE_STUDENT));
+	discord.cache.set('roles', cache);
+	return discord.cache.getRoles();
+};
 
-	roles.cohorts = await server.roles.cache.filter(role => role.name.match(/^C#\d+$/));
-    roles.specialization = await server.roles.cache.find(role => role.id === '1176062134480801792');
-    roles.ActiveStudent = await server.roles.cache.find(role => role.id === '1143248679180972053');
-    roles.Alternance = await server.roles.cache.find(role => role.id === '1183100023152590971');
+/**
+ * Refresh cache
+ */
+async function refreshCache() {
+	const guild = discord.guilds.cache.get(config.GUILD_ID);
+	if (!guild) {
+		console.log('Discord ↪\tConfigured GUILD_ID is invalid.');
+		process.exit(1);
+	};
 
-	console.log('Discord ↪', `${members.size} members loaded`);
+	discord.cache.set('guild', guild);
+	const members = await loadMembers(guild);
+	const roles = await loadRoles(guild);
 
-	SystemService.emit('holberton.load');
-}
+	console.log('Discord ↪', `Loaded ${members.size} members and ${roles.size} roles.`);
 
-discord.on('ready', handleLoadMembers);
-SystemService.on('discord.refresh', handleLoadMembers);
+	EventService.emit('holberton.load');
+};
+
+discord.on(Events.ClientReady, refreshCache);
+EventService.on('discord.refresh', refreshCache);

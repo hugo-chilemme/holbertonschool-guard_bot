@@ -1,7 +1,6 @@
 const { Message, ChannelType, User } = require('discord.js');
 const APIController = require('../services/Holberton');
 const discord = require('../classes/HBClient');
-const rankCard = require('../../modules/rankCard');
 
 /**
  * Add
@@ -37,7 +36,6 @@ async function addXp(user, data, message, multiplier = 1.2) {
 			next_level_xp: data.next_level_xp
 		});
 	};
-
 	return {"data": data, "level_up": level_up};
 }
 
@@ -80,11 +78,10 @@ module.exports = async (client, message) => {
 	if (isHelpChannel) {
 		const {data, level_up} = await addXp(user, user.help_experience, message, 1.5);
 		user.help_experience = data;
-		if (level_up) onLevelUp(member, data, "helper");
+		if (level_up) onLevelUp(member, user.help_experience, "helper");
 	} else {
 		const {data, level_up} = await addXp(user, user.message_experience, message);
 		user.message_experience = data;
-		if (level_up) onLevelUp(member, data);
+		if (level_up) onLevelUp(member, user.message_experience);
 	};
-
 };

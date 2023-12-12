@@ -1,7 +1,8 @@
 const Command = require("../classes/Command");
 const SubCommand = require("../classes/SubCommand");
 const discord = require("../classes/HBClient");
-const rankCard = require("../../modules/rankCard");
+const rankCard = require("../modules/rankCard");
+const leaderboardCard = require("../modules/leaderboardCard");
 
 /**
  * Get user rank card
@@ -45,7 +46,7 @@ module.exports = new Command(
 		new SubCommand(
 			new SubCommand.Builder()
 				.setName("user")
-				.setDescription("Afficher votre experiance")
+				.setDescription("Afficher l'experience d'un membre")
 				.addUserOption(option =>
 					option.setName("user")
 						.setDescription("Utilisateur")
@@ -62,5 +63,29 @@ module.exports = new Command(
 				),
 			async interaction => getUserRankCard(interaction, interaction.options.getUser("user"))
 		),
+		new SubCommand(
+			new SubCommand.Builder()
+				.setName("leaderboard")
+				.setDescription("Afficher le classement")
+				.addStringOption(option =>
+					option.setName("type")
+						.setDescription("Type d'XP")
+						.setRequired(true)
+						.setChoices(
+							{ name:"Holbie", value:"message_experience" },
+							{ name:"Helper", value:"help_experience" }
+						)
+				),
+			async interaction => {
+				const type = interaction.options.getString("type");
+				const members = discord.cache.getMembers();
+				const users = discord.cache.getUsers();
+				const data = members.map(member => {
+					const user = users.get(member.user.id);
+					return user;
+				}).sort((a, b) => b[type].total_xp - a[type].total_xp);
+				await interaction.followUp({files: [await leaderboardCard(data, type)]});
+			}
+		)
 	]
 );

@@ -38,7 +38,6 @@ async function refreshCache() {
 	};
 
 	discord.cache.set('guild', guild);
-	discord.cache.set("users", new Collection());
 	const members = await loadMembers(guild);
 	const roles = await loadRoles(guild);
 

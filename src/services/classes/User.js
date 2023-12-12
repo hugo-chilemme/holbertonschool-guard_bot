@@ -87,12 +87,12 @@ class User {
 	 */
 	_setExperience(experience) {
 		return experience ? {
-			"level": experience.level || 0,
-			"next_level_xp": experience.next_level_xp || 200,
-			"xp": experience.xp || 0,
-			"total_messages": experience.total_messages || 0,
-			"average_message_length": experience.average_message_length || 0,
-			"total_xp": experience.total_xp || 0,
+			"level": experience.level,
+			"next_level_xp": experience.next_level_xp,
+			"xp": experience.xp,
+			"total_messages": experience.total_messages,
+			"average_message_length": experience.average_message_length,
+			"total_xp": experience.total_xp,
 		} : {
 			"level": 0,
 			"next_level_xp": 200,

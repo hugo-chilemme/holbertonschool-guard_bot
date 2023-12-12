@@ -23,6 +23,7 @@ class HBClient extends Client {
 		console.log('Discord ↪\tPartials ' + this.options.partials);
 		this.cache = ClientData;
 		this.commands = new Collection();
+		this.cache.set("users", new Collection());
 		this.init();
 	};
 

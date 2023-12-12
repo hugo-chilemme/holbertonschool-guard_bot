@@ -34,7 +34,12 @@ function handleSubCommand(command, interaction) {
 module.exports = async (client, interaction) => {
 	if (!interaction.isChatInputCommand()) return;
 
-    await interaction.deferReply({ ephemeral: true, fetchReply: true });
+    try {
+        await interaction.deferReply({ ephemeral: true, fetchReply: true });
+    } catch (error) {
+        console.error(`Error while deferring reply: ${error.message}`);
+        return;
+    };
 
 	const command = client.commands.get(interaction.commandName);
 
@@ -49,10 +54,10 @@ module.exports = async (client, interaction) => {
             return;
 		await command.callback(interaction);
 	} catch (error) {
-		console.error(error);
+		console.error(error.message);
 		if (interaction.replied || interaction.deferred)
 			await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
 		else
 			await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
-	}
+	};
 };

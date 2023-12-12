@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Partials, Events, ActivityType, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Events, Collection } = require('discord.js');
 const { DISCORD_TOKEN, GUILD_ID } = require('../config');
 const ClientData = require('./ClientData');
 

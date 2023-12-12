@@ -7,8 +7,9 @@ const discord = require('../classes/HBClient');
  * @param {object} data
  * @param {Message} message
  * @param {number} multiplier
+ * @param {string} type
  */
-async function addXp(user, data, message, multiplier = 1.2) {
+async function addXp(user, data, message, multiplier = 1.2, type = "message_experience") {
 	const xp_random = Math.floor(Math.random() * 10 + 20);
 
 	data.xp += xp_random;
@@ -28,12 +29,14 @@ async function addXp(user, data, message, multiplier = 1.2) {
 
 	if (process.env.NODE_ENV === 'production') {
 		await APIController('users/' + user.user.id + '/set', {
-			xp: data.xp,
-			total_xp: data.total_xp,
-			total_messages: data.total_messages,
-			average_message_length: data.average_message_length,
-			level: data.level,
-			next_level_xp: data.next_level_xp
+			[type]: {
+				xp: data.xp,
+				total_xp: data.total_xp,
+				total_messages: data.total_messages,
+				average_message_length: data.average_message_length,
+				level: data.level,
+				next_level_xp: data.next_level_xp
+			}
 		});
 	};
 	return {"data": data, "level_up": level_up};
@@ -48,7 +51,7 @@ async function addXp(user, data, message, multiplier = 1.2) {
 async function onLevelUp(member, experience, type = "holbie") {
 	try {
 		const dm = await member.createDM();
-		await dm.send({content:`Tu est maintenant un ***${type}*** de niveau *${experience.level}* ! ✨`});
+		await dm.send({content:`Tu es maintenant un ***${type}*** de niveau *${experience.level}* ! ✨`});
 	} catch (e) {
 		console.error(`Discord ↪ Error while sending DM (XP Reward) to (${member.tag}, ${member.id})`);
 		console.error(e.message);
@@ -76,11 +79,11 @@ module.exports = async (client, message) => {
 	const isHelpChannel = message.channel.name.includes('aides');
 
 	if (isHelpChannel) {
-		const {data, level_up} = await addXp(user, user.help_experience, message, 1.5);
+		const {data, level_up} = await addXp(user, user.help_experience, message, 1.5, "help_experience");
 		user.help_experience = data;
 		if (level_up) onLevelUp(member, user.help_experience, "helper");
 	} else {
-		const {data, level_up} = await addXp(user, user.message_experience, message);
+		const {data, level_up} = await addXp(user, user.message_experience, message, 1.2, "message_experience");
 		user.message_experience = data;
 		if (level_up) onLevelUp(member, user.message_experience);
 	};

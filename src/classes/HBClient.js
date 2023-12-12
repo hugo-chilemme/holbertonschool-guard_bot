@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Partials, Events, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Events, ActivityType, Collection } = require('discord.js');
 const { DISCORD_TOKEN, GUILD_ID } = require('../config');
 const ClientData = require('./ClientData');
 
@@ -22,6 +22,7 @@ class HBClient extends Client {
 		console.log('Discord ↪\tIntents ' + this.options.intents);
 		console.log('Discord ↪\tPartials ' + this.options.partials);
 		this.cache = ClientData;
+		this.commands = new Collection();
 		this.init();
 	};
 

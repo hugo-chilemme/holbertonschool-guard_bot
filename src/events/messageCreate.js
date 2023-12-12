@@ -1,6 +1,7 @@
 const { Message, ChannelType, User } = require('discord.js');
 const APIController = require('../services/Holberton');
 const discord = require('../classes/HBClient');
+const rankCard = require('../../modules/rankCard');
 
 /**
  * Add
@@ -43,13 +44,13 @@ async function addXp(user, data, message, multiplier = 1.2) {
 /**
  * Send DM to user when level up
  * @param {User} member
- * @param {boolean} isHelpChannel
+ * @param {object} experience
  * @returns {Promise<void>}
  */
-async function onLevelUp(member, level, type = "holbie") {
+async function onLevelUp(member, experience, type = "holbie") {
 	try {
-		const dm = member.dmChannel ? member.dmChannel : await member.createDM();
-		await dm.send({content:`Tu est maintenant un ***${type}*** de niveau *${level}* ! ✨`});
+		const dm = await member.createDM();
+		await dm.send({content:`Tu est maintenant un ***${type}*** de niveau *${experience.level}* ! ✨`});
 	} catch (e) {
 		console.error(`Discord ↪ Error while sending DM (XP Reward) to (${member.tag}, ${member.id})`);
 		console.error(e.message);
@@ -79,13 +80,11 @@ module.exports = async (client, message) => {
 	if (isHelpChannel) {
 		const {data, level_up} = await addXp(user, user.help_experience, message, 1.5);
 		user.help_experience = data;
-		console.log(user.help_experience);
-		if (level_up) onLevelUp(member, data.level, "helper");
+		if (level_up) onLevelUp(member, data, "helper");
 	} else {
 		const {data, level_up} = await addXp(user, user.message_experience, message);
 		user.message_experience = data;
-		console.log(user.message_experience);
-		if (level_up) onLevelUp(member, data.level);
+		if (level_up) onLevelUp(member, data);
 	};
 
 };

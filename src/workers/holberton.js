@@ -3,175 +3,182 @@ const { _removeRole } = require('../services/functions/discordRolesUtils');
 const EventService = require('../services/EventService');
 const ApiController = require('../services/Holberton');
 const User = require('../services/classes/User');
+const fakeUser = require('../modules/fakeUser');
 const discord = require('../classes/HBClient');
 
-/**
- * Remove user from userIds
- * @param {string[]} userIds
- * @param {string} id
- */
-function whitelistUser(userIds, id) {
-	const index = userIds.indexOf(id);
-	if (index > -1) {
-		userIds.splice(index, 1);
-	};
-};
+/* Staff roles */
+const admin_roles = [
+	'1165695741939945564',
+	'1107994742018560060',
+	'1158687105095045180'
+];
 
 /**
  * Create a new User instance and add it to the users object or refresh data
  * @param {object} user
  * @param {GuildMember} member
  */
-function rebuildUser(user, member) {
-	const cache = discord.cache.getUsers();
-	let current = cache.get(user.id);
-	if (!cache.has(user.id))
-	{
-		const instUser = new User(user, member);
-		cache.set(user.id, instUser);
-		cache.set(member.user.id, instUser);
-		cache.set(user.slack_id, instUser);
-		current = instUser;
+function refreshUserInstance(user, member) {
+	try {
+		const cache = discord.cache.getUsers();
+		let current = cache.get(user.id);
+		if (!cache.has(user.id))
+		{
+			const instUser = new User(user, member);
+			cache.set(user.id, instUser);
+			cache.set(member.user.id, instUser);
+			cache.set(user.slack_id, instUser);
+			current = instUser;
+		};
+		/* TODO: Maybe rename variable 'user' to something more meaningful */
+		current.user = user; //refresh data
+	} catch (error) {
+		console.error(`Holberton ↪ refreshUserInstance() -> ${error.message}`);
 	};
-	/* TODO: Maybe rename variable 'user' to something more meaningful */
-	current.user = user; //refresh data
 };
 
 /**
- *
- * @param {object[]} usersEligibility
- * @param {Collection<string, GuildMember>} members
- * @param {string[]} userIds
+ * Is this needed ?
+ * Refresh user data
+ * @param {object} user
+ * @returns {object}
  */
-async function refreshEligibleUsers(usersEligibility, members, userIds) {
-	for (let user of usersEligibility) {
-		let member = members.find(u =>
-			u.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
-		);
-		if (!member) {
-			user = await ApiController('users/' + user.id, {refresh: true});
-			member = members.find(u =>
-				u.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
-			);
-			if (!member) continue;
-		}
-		whitelistUser(userIds, member.user.id);
-		rebuildUser(user, member);
-	};
+async function requestUserSync(user) {
+	return await ApiController('users/' + user.id, {refresh: true});
 };
 
 /**
- * Check if member is an admin
+ * Get whitelisted roles
+ * @returns {string[]}
+ */
+function getWhitelistedRoles() {
+	try {
+		const cache = [];
+		const roles = discord.cache.getRoles();
+		const cohort = roles.get("cohorts");
+		const ActiveStudent = roles.get("ActiveStudent");
+		const specialization = roles.get("specialization");
+		cache.push(cohort.map(role => role.id));
+		cache.push(ActiveStudent.id);
+		cache.push(specialization.id);
+		return cache;
+	} catch (error) {
+		console.error(`Holberton ↪ getWhitelistedRoles() -> ${error.message}`);
+	};
+	return null;
+}
+
+/**
+ * Remove user whitelisted roles
+ * @param {GuildMember} member
+ * @returns {void}
+ */
+function removeFromWhitelist(member) {
+	const whitelisted = getWhitelistedRoles();
+	const roles = member.roles.cache;
+	roles.forEach(role => {
+		if (whitelisted.includes(role.id))
+			_removeRole(member, role);
+	});
+};
+
+
+/**
+ * Get user privileges
  * @param {GuildMember} member
  * @returns {boolean}
  */
-function isAdmin(member) {
-	return member.user.bot || member.roles.cache.has('1165695741939945564') || member.roles.cache.has('1107994742018560060');
-};
-
-/**
- * Check if role is already synced
- * @param {Role} role
- * @returns {boolean}
- */
-function isSynced(role) {
-	const roles = discord.cache.getRoles();
-	const cohort = roles.get("cohorts").has(role.id);
-	const student = roles.get("ActiveStudent");
-	const specialization = roles.get("specialization");
-	return (cohort || role.id === student.id || role.id === specialization.id) ? false : true;
-};
-
-/**
- * Remove roles from non Active Students
- * @param {Map} userIds
- * @param {Collection<string, GuildMember>} members
- */
-function removeNonEligibleUsers(userIds, members) {
-	for (const id of userIds)
-	{
-		const u = members.get(id);
-
-		if (isAdmin(u)) {
-			whitelistUser(userIds, id);
-			continue;
-		};
-
-		try {
-			u.roles.cache.map((role) => {
-				if (role.name === "@everyone") return;
-				if (isSynced(role)) return;
-				_removeRole(u, role);
-			});
-		} catch(e) {
-			console.log(e.message);
-		};
+function hasPrivileges(member) {
+	try {
+		if (member.user.bot) return true;
+		const roles = member.roles.cache.values();
+		for (const role of roles) {
+			if (role instanceof Role) {
+				if (admin_roles.includes(role.id))
+					return true;
+			};
+		}
+	} catch (error) {
+		console.error(`Holberton ↪ hasPrivileges() -> ${error.message}`);
 	};
+	return false;
 };
 
 /**
- * Create a fake user for testing purposes
- * @param {object[]} users
- * @returns {void}
+ * Store users by discord tag
+ * @param {object} users
+ * @returns {object}
  */
-function createFakeUser(users, tag) {
-	users.push({
-		"id": `${tag.toLowerCase()}_id`,
-		"slack_id": `${tag.toLowerCase()}_slack_id`,
-		"discord_tag": tag,
-		"username": `TestUser_${tag.toLowerCase()}`,
-		"cohort": {
-			"id": Math.random().toString(36).substring(7),
-			"name": "C22-202208",
-			"number": "22",
-		},
-		"products": [
+function prepareUsers(users) {
+	const data = {};
+	for (let user of users) {
+		if (!user)
+			continue;
+		const discord_tag = user.discord_tag.split('#')[0].toLowerCase();
+		data[discord_tag] = user;
+	};
+	return data;
+};
+
+/**
+ * Sync API users with system
+ * @param {Collection<string, GuildMember>} members
+ * @param {object} apiUsers
+ * @returns {number}
+ */
+function refreshUsers(members, apiUsers) {
+	const users = prepareUsers(apiUsers);
+	let active = 0;
+	try {
+		members.forEach(member => {
+			/* Check if user is in the whitelist */
+			const tag = member.user.username.toLowerCase();
+			const user = users[tag];
+			if (hasPrivileges(member))
 			{
-				"status": "In progress",
-				"title": "Full Stack Software Engineer",
-			}
-		],
-		"cache": {
-			"fundamental_cohort": "C#2000",
-		},
-		"active": false
-	});
-	console.log('Holberton ↪', `Added fake user ${tag}`);
+				console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
+				active++;
+				return;
+			};
+			if (!user) {
+				removeFromWhitelist(member);
+				return;
+			};
+			refreshUserInstance(user, member);
+			active++;
+		});
+	} catch (error) {
+		console.error(`Holberton ↪ refreshUsers() -> ${error.message}`);
+	};
+	return active;
 };
 
 async function handleLoadUsers() {
 	console.log('Holberton ↪', 'Loading users...');
 	discord.user.setActivity('Initializing...', { type: ActivityType.Custom });
-	/** @type {object[]} */
-	const users = process.env.NODE_ENV === 'development' ? [] : await ApiController('users', {campus: 'TLS'});
-	const members = discord.cache.getMembers();
+	try {
+		/** @type {object[]} */
+		const users = process.env.NODE_ENV === 'development' ? [] : await ApiController('users', {campus: 'TLS'});
+		const members = discord.cache.getMembers();
 
-	if (users.status === false) {
-		console.log('Holberton ↪', 'Error while loading users');
+		/* Create fake users for development */
+		if (process.env.NODE_ENV === 'development')
+			members.forEach(member => {
+				if (member.user.bot) return;
+				users.push(fakeUser.create(member.user.tag, Number(member.user.id), false));
+			});
+
+		/* Store users with valid discord tag */
+		const usersLinked = users.filter(user => user.discord_tag);
+		console.log('Holberton ↪', `${usersLinked.length} user(s) received`);
+		const activeCount = refreshUsers(members, usersLinked);
+
+		discord.user.setActivity(`${activeCount} students`, { type: ActivityType.Custom});
+		console.log('Holberton ↪', `${members.size - activeCount} user(s) not validated`);
+	} catch (error) {
+		console.error(`Holberton ↪ handleLoadUsers() -> ${error.message}`);
 		discord.user.setActivity('Some errors detected', { type: ActivityType.Custom });
-		return;
 	};
-
-	/* TODO: Remove this before merging to production. */
-	if (process.env.NODE_ENV === 'development')
-		for (const member of members.values())
-			createFakeUser(users, member.user.tag);
-
-
-	/** @type {object[]} */
-	const usersEligibility = users.filter(user => user.discord_tag);
-
-	/* TODO: Remove unused variable activeCount if not needed */
-	let activeCount = 0;
-	const userIds = members.map(member => member.user.id);
-
-	console.log('Holberton ↪', `${usersEligibility.length} user(s) received`);
-
-	refreshEligibleUsers(usersEligibility, members, userIds);
-	removeNonEligibleUsers(userIds, members);
-
-	discord.user.setActivity(`${usersEligibility.length - userIds.length} students`, { type: ActivityType.Custom});
-	console.log('Holberton ↪', `${userIds.length} user(s) not validated`);
 	setTimeout(() => EventService.emit('discord.refresh'), 60000);
 };
 

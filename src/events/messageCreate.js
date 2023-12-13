@@ -1,5 +1,5 @@
 const { Message, ChannelType, User } = require('discord.js');
-const APIController = require('../services/Holberton');
+const ApiController = require('../services/Holberton');
 const discord = require('../classes/HBClient');
 
 /**
@@ -27,8 +27,9 @@ async function addXp(user, data, message, multiplier = 1.2, type = "message_expe
 		console.log("Level up! " + user.user.username + " is now level " + data.level + "!");
 	};
 
-	if (process.env.NODE_ENV === 'production') {
-		await APIController('users/' + user.user.id + '/set', {
+	/* Don't update API if in development mode */
+	if (process.env.NODE_ENV !== 'development') {
+		await ApiController('users/' + user.user.id + '/set', {
 			[type]: {
 				xp: data.xp,
 				total_xp: data.total_xp,

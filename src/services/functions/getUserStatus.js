@@ -27,5 +27,4 @@ module.exports = function (user) {
 		return 'fundamental';
 	// Alumni ?
 	return 'specialization';
-
 }

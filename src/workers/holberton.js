@@ -133,7 +133,7 @@ function refreshUsers(members, apiUsers) {
 		members.forEach(member => {
 			/* Check if user is in the whitelist */
 			const tag = member.user.username.toLowerCase();
-			const user = users[tag];
+			let user = users[tag];
 			if (hasPrivileges(member))
 			{
 				console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
@@ -141,8 +141,12 @@ function refreshUsers(members, apiUsers) {
 				return;
 			};
 			if (!user) {
-				removeFromWhitelist(member);
-				return;
+				user = requestUserSync(member.user);
+				if (!user)
+				{
+					removeFromWhitelist(member);
+					return;
+				};
 			};
 			refreshUserInstance(user, member);
 			active++;

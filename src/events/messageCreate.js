@@ -18,7 +18,7 @@ async function addXp(user, data, message, multiplier = 1.2, type = "message_expe
 	data.average_message_length = Math.round((data.average_message_length + message.content.length) / data.total_messages);
 
 	const level_up = data.xp >= data.next_level_xp;
-
+	console.log(level_up, xp_random);
 	if (level_up)
 	{
 		data.xp = 0;
@@ -69,7 +69,7 @@ module.exports = async (client, message) => {
 	const member = message.author;
 	if (!member) return;
 	if (member.bot) return;
-
+	
 	const users = discord.cache.getUsers();
 	const user = users.get(member.id);
 	if (!user) return;

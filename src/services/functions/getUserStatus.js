@@ -16,6 +16,8 @@ function getDateStart(monthAndYear) {
 
 module.exports = function (user) {
 	const { id, name, number } = user.cohort;
+	if (name === 'VCFR-BETA-CYBER')
+		return 'specialization';
 	const date_start = getDateStart(name.split('-')[1]);
 	const date_end = new Date(date_start.getTime());
 		date_end.setMonth(date_start.getMonth() + 9);

@@ -1,4 +1,5 @@
 const MessageTracker = require('../services/libraries/slack/MessageTracker');
+const discord = require('../classes/HBClient');
 
 function handleGetMessages() {
 

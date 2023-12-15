@@ -49,7 +49,7 @@ exports._sendMessage = async function _sendMessage(channelId, content) {
 	} catch(e) {
 		console.log(e.message);
 	}
-}
+} 
 
 exports._editMessage = async function _editMessage(channelId, messageId, content = {}) {
 	if(!channelId || !messageId) return;

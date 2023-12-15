@@ -29,6 +29,7 @@ function refreshUserInstance(user, member) {
 			cache.set(user.id, instUser);
 			cache.set(member.user.id, instUser);
 			cache.set(user.slack_id, instUser);
+
 			current = instUser;
 		};
 		/* TODO: Maybe rename variable 'user' to something more meaningful */
@@ -125,13 +126,13 @@ function getMemberByUserTag(user) {
 function prepareUsers(users) {
 	const data = {};
 	for (let user of users) {
-		if (!user)
+		if (!user || !user.discord_tag)
 			continue;
 		let member = getMemberByUserTag(user);
 		if (!member)
 		{
 			user = requestUserSync(user);
-			if (!user)
+			if (!user || !user.discord_tag)
 				continue;
 			member = getMemberByUserTag(user);
 			if (!member)

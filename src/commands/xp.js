@@ -17,8 +17,10 @@ async function getUserRankCard(interaction, memberUser) {
 		const type = interaction.options.getString("type");
 		const data = user[type];
 		const typeLabel = type == "message_experience" ? "Holbie" : "Helper";
+		const barSize = 20;
+		let levelBar = '[**' + '#'.repeat(barSize * data.xp / data.next_level_xp) + '-'.repeat(barSize - barSize * data.xp / data.next_level_xp) + '**]';
 		const embed = new EmbedBuilder()
-			.setDescription(`XP de ${memberUser}. Type: **${typeLabel}**`)
+			.setDescription(`XP de ${memberUser}. Type: **${typeLabel}**\n${levelBar}`)
 			.setFooter({ text: "This is an automated message"})
 			.addFields(
 				{ name: "XP", value: data.xp.toString(), inline: true },

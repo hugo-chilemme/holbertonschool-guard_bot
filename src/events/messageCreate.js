@@ -52,7 +52,7 @@ async function addXp(user, data, message, multiplier = 1.2, type = "message_expe
  */
 async function onLevelUp(member, message, experience, type = "holbie") {
 	try {
-		message.reply({content:`Tu es maintenant un ***${type}*** de niveau *${experience.level}* ! ✨`});
+		message.reply({content:`Tu es maintenant ***${type}*** de niveau *${experience.level}* ! ✨`});
 	} catch (e) {
 		console.error(`Discord ↪ Error while replying to message onLevelUp() to (${member.tag}, ${member.id})`);
 		console.error(e.message);

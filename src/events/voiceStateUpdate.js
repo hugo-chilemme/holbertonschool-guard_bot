@@ -6,17 +6,16 @@ module.exports = async (_, oldState, newState) => {
 		const voice = voices.get(oldState.channelId);
 		if (!voice)
 			return;
-		const member = oldState.member;
 		const voiceChannel = oldState.channel;
-	
+
 		if (voiceChannel && voiceChannel.members.size === 0) {
 		  voices.del(oldState.channelId);
 		  await voiceChannel.delete();
-		}
-	  }
+		};
+	};
 	if (!newState.channelId || newState.channelId !== '1185153167806185575') return;
 	const member = newState.member;
-
+	if (member.user.bot) return;
 	const guild = await newState.guild.fetch('976357520895528960');
 
 	const channel = await guild.channels.create({

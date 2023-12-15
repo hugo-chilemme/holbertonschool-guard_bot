@@ -75,8 +75,4 @@ exports._replyMessage = async function _replyMessage(message, content = {}) {
 
 	}
 
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 1b516873105919937c48a624c477a831df4a9b40

@@ -157,7 +157,8 @@ function refreshUsers(members, apiUsers) {
 			let user = apiUsers[tag];
 			if (hasPrivileges(member))
 			{
-				console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
+				if (isDevMode)
+					console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
 				active++;
 				continue;
 			};

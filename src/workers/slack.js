@@ -2,7 +2,8 @@ const MessageTracker = require('../services/libraries/slack/MessageTracker');
 const discord = require('../classes/HBClient');
 
 function handleGetMessages() {
-
+	if (process.env.NODE_ENV == 'development')
+		return console.log('Slack ↪ Disabled in development mode');
 	new MessageTracker('C0690FHNFAQ', 5000, '1107732597011906630');
 	new MessageTracker('C043WKM211T', 10000, '976357520895528965');
 

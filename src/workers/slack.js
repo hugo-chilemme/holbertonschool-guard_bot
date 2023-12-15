@@ -1,4 +1,5 @@
 const MessageTracker = require('../services/libraries/slack/MessageTracker');
+const discord = require('../classes/HBClient');
 
 function handleGetMessages() {
 
@@ -14,7 +15,6 @@ function handleGetMessages() {
 	// Cohort 22
 	new MessageTracker('C04PKDQNDQA', 60000, '1143262201889689713');
 
-}
-
+};
 
 discord.on('ready', handleGetMessages);

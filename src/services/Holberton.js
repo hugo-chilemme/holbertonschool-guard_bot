@@ -12,5 +12,5 @@ module.exports = async (event, params = {}) => {
     };
 
 	return await GatewayService(API_URI, params, headers)
-	
+
 }

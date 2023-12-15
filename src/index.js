@@ -1,19 +1,14 @@
-const { Client, GatewayIntentBits } = require('discord.js');
-const { DISCORD_TOKEN } = require('./config');
 const fs = require('fs');
 const path = require('path');
 
-const system = require('./system');
-global.SystemService = new system();
-
-global.discord = new Client({ intents: Object.values(GatewayIntentBits).filter(value => typeof value !== 'number'), partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
-global.members = {};
-global.users = {};
-global.roles = {};
+const { REST, Routes, Events } = require('discord.js');
+const discord = require('./classes/HBClient');
 // Load all files in the events/ directory
 
 const eventsPath = path.join(__dirname, './events');
 const workersPath = path.join(__dirname, './workers');
+const commandsPath = path.join(__dirname, './commands');
+const commands = [];
 
 fs.readdirSync(eventsPath).forEach(file => {
 	const target = eventsPath + '/' + file;
@@ -42,4 +37,32 @@ fs.readdirSync(workersPath).forEach(file => {
 	}
 });
 
-discord.login(DISCORD_TOKEN);
+fs.readdirSync(commandsPath).forEach(file => {
+	const target = commandsPath + '/' + file;
+
+	try {
+		const command = require(target);
+		console.log('✓\t', target);
+		commands.push(command.handler.toJSON());
+		discord.commands.set(command.handler.name, command);
+	} catch (e) {
+		console.log('×\t', target);
+		console.error(e);
+	}
+});
+
+discord.on(Events.ClientReady, async () => {
+	try {
+        const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+        console.log("Discord ↪ Started refreshing application (/) commands.");
+
+        await rest.put(
+            Routes.applicationCommands(discord.user.id),
+            {body: commands},
+        );
+
+        console.log("Discord ↪ Successfully reloaded application (/) commands.");
+    } catch (error) {
+        console.error(error);
+    };
+});

@@ -1,7 +1,6 @@
 const { ChannelType } = require('discord.js');
 
-module.exports = async (oldState, newState) => {
-	return;
+module.exports = async (_, oldState, newState) => {
 	if (!newState.channelId || newState.channelId !== '1115392857210093579') return;
 	const member = newState.member;
 

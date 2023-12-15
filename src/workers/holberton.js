@@ -5,6 +5,7 @@ const ApiController = require('../services/Holberton');
 const User = require('../services/classes/User');
 const fakeUser = require('../modules/fakeUser');
 const discord = require('../classes/HBClient');
+const isDevMode = process.env.NODE_ENV === 'development';
 
 /* Staff roles */
 const admin_roles = [
@@ -44,7 +45,7 @@ function refreshUserInstance(user, member) {
  * @returns {object}
  */
 async function requestUserSync(user) {
-	return await ApiController('users/' + user.id, {refresh: true});
+	return isDevMode ? [] : await ApiController('users/' + user.id, {refresh: true});
 };
 
 /**
@@ -105,6 +106,18 @@ function hasPrivileges(member) {
 };
 
 /**
+ * Get member by user discord tag
+ * @param {object} user
+ * @returns {GuildMember}
+ */
+function getMemberByUserTag(user) {
+	return discord.cache.getMembers().find(member =>
+		member.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
+	);
+};
+
+
+/**
  * Store users by discord tag
  * @param {object} users
  * @returns {object}
@@ -114,8 +127,17 @@ function prepareUsers(users) {
 	for (let user of users) {
 		if (!user)
 			continue;
-		const discord_tag = user.discord_tag.split('#')[0].toLowerCase();
-		data[discord_tag] = user;
+		let member = getMemberByUserTag(user);
+		if (!member)
+		{
+			user = requestUserSync(user);
+			if (!user)
+				continue;
+			member = getMemberByUserTag(user);
+			if (!member)
+				continue;
+		};
+		data[member.user.username.toLowerCase()] = user;
 	};
 	return data;
 };
@@ -124,33 +146,29 @@ function prepareUsers(users) {
  * Sync API users with system
  * @param {Collection<string, GuildMember>} members
  * @param {object} apiUsers
- * @returns {number}
  */
 function refreshUsers(members, apiUsers) {
-	const users = prepareUsers(apiUsers);
 	let active = 0;
 	try {
-		members.forEach(member => {
+		for (const member of members.values()) {
 			/* Check if user is in the whitelist */
 			const tag = member.user.username.toLowerCase();
-			let user = users[tag];
+			let user = apiUsers[tag];
 			if (hasPrivileges(member))
 			{
 				console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
 				active++;
-				return;
+				continue;
 			};
 			if (!user) {
-				user = requestUserSync(member.user);
-				if (!user)
-				{
+				if (!user) {
 					removeFromWhitelist(member);
-					return;
+					continue;
 				};
 			};
 			refreshUserInstance(user, member);
 			active++;
-		});
+		};
 	} catch (error) {
 		console.error(`Holberton ↪ refreshUsers() -> ${error.message}`);
 	};
@@ -162,11 +180,11 @@ async function handleLoadUsers() {
 	discord.user.setActivity('Initializing...', { type: ActivityType.Custom });
 	try {
 		/** @type {object[]} */
-		const users = process.env.NODE_ENV === 'development' ? [] : await ApiController('users', {campus: 'TLS'});
+		const users = isDevMode ? [] : await ApiController('users', {campus: 'TLS'});
 		const members = discord.cache.getMembers();
 
 		/* Create fake users for development */
-		if (process.env.NODE_ENV === 'development')
+		if (isDevMode)
 			members.forEach(member => {
 				if (member.user.bot) return;
 				users.push(fakeUser.create(member.user.tag, Number(member.user.id), false));
@@ -175,10 +193,11 @@ async function handleLoadUsers() {
 		/* Store users with valid discord tag */
 		const usersLinked = users.filter(user => user.discord_tag);
 		console.log('Holberton ↪', `${usersLinked.length} user(s) received`);
-		const activeCount = refreshUsers(members, usersLinked);
+		const apiUsers = prepareUsers(usersLinked);
+		const activeCount = refreshUsers(members, apiUsers);
 
 		discord.user.setActivity(`${activeCount} students`, { type: ActivityType.Custom});
-		console.log('Holberton ↪', `${members.size - activeCount} user(s) not validated`);
+		console.log('Holberton ↪', `${activeCount - Object.keys(apiUsers).length} user(s) not validated`);
 	} catch (error) {
 		console.error(`Holberton ↪ handleLoadUsers() -> ${error.message}`);
 		discord.user.setActivity('Some errors detected', { type: ActivityType.Custom });

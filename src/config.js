@@ -1,4 +1,4 @@
-const mode = 'production'; //development
+const mode = 'production'; //development | production
 require('dotenv').config({path: process.cwd() + (mode == 'production' ? '/.env' : '/.devenv')});
 process.env.NODE_ENV = mode;
 

@@ -10,14 +10,18 @@ const leaderboardCard = require("../modules/leaderboardCard");
  * @param {User} memberUser
  */
 async function getUserRankCard(interaction, memberUser) {
-	const user = discord.cache.getUsers().get(memberUser.id);
-	if (!user) {
-		throw new Error("User not found");
+	try {
+		const user = discord.cache.getUsers().get(memberUser.id);
+		if (!user) {
+			throw new Error("User not found");
+		};
+		const type = interaction.options.getString("type");
+		const data = user[type];
+		const rank = await rankCard(memberUser, data);
+		await interaction.followUp({ files: [rank], ephemeral: true });
+	} catch (error) {
+		console.error(error.message);
 	};
-	const type = interaction.options.getString("type");
-	const data = user[type];
-	const rank = await rankCard(memberUser, data)
-	await interaction.followUp({ files: [rank], ephemeral: true });
 };
 
 module.exports = new Command(
@@ -76,15 +80,19 @@ module.exports = new Command(
 						)
 				),
 			async interaction => {
-				const type = interaction.options.getString("type");
-				const members = discord.cache.getMembers();
-				const users = discord.cache.getUsers();
-				const data = members.map(member => {
-					const user = users.get(member.user.id);
-					return user;
-				}).sort((a, b) => b[type].total_xp - a[type].total_xp);
-				const leaderboard = await leaderboardCard(data, type);
-				await interaction.followUp({files: [leaderboard]});
+				try {
+					const type = interaction.options.getString("type");
+					const members = discord.cache.getMembers();
+					const users = discord.cache.getUsers();
+					const data = members.map(member => {
+						const user = users.get(member.user.id);
+						return user;
+					}).sort((a, b) => b[type].total_xp - a[type].total_xp);
+					const leaderboard = await leaderboardCard(data, type);
+					await interaction.followUp({files: [leaderboard]});
+				} catch (error) {
+					console.error(error.message);
+				};
 			}
 		)
 	]

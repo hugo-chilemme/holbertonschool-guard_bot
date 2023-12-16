@@ -1,7 +1,12 @@
-const discord = require("../classes/HBClient");
 const Command = require("../classes/Command");
 const SubCommand = require("../classes/SubCommand");
-const { PermissionFlagsBits, ChannelType, VoiceChannel, OverwriteType, CommandInteraction } = require("discord.js");
+const {
+	PermissionFlagsBits,
+	ChannelType,
+	VoiceChannel,
+	OverwriteType,
+	CommandInteraction
+} = require("discord.js");
 
 /**
  * @param {CommandInteraction} interaction

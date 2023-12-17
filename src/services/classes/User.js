@@ -14,7 +14,7 @@ class User {
 
 		this.user.discord_id = member.user.id;
 		this._config();
-		console.log('Holberton ↪', `User ${this.user.id} added`);
+		// console.log('Holberton ↪', `User ${this.user.id} added`);
 	}
 
 	_config() {
@@ -24,11 +24,11 @@ class User {
 		this.cohortName = `C#${this.user.cohort.number}`;
 		this.isAlternating = this.user.products.filter(product => product.status === "In progress" && product.title.includes('Alternance France')).length > 0;
 
-		console.log('Holberton ↪',
-			`User ${this.user.id} is ${this.cohortName}`,
-			`${this.cohortStatus} ${this.isActive ? 'active' : 'inactive'}`,
-			`and ${this.isAlternating ? 'alternating' : 'not alternating'}`
-		);
+		// console.log('Holberton ↪',
+		// 	`User ${this.user.id} is ${this.cohortName}`,
+		// 	`${this.cohortStatus} ${this.isActive ? 'active' : 'inactive'}`,
+		// 	`and ${this.isAlternating ? 'alternating' : 'not alternating'}`
+		// );
 
 		if (this.cohortStatus === 'fundamental' && this.cohortName !== this.user.cache.fundamental_cohort)
 			ApiController(`users/${this.user.id}/set`, {fundamental_cohort: this.cohortName});

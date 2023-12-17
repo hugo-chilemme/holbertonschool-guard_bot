@@ -40,7 +40,6 @@ async function refreshCache() {
 	discord.cache.set('guild', guild);
 	const members = await loadMembers(guild);
 	const roles = await loadRoles(guild);
-
 	console.log('Discord ↪', `Loaded ${members.size} members and ${roles.size} roles.`);
 
 	EventService.emit('holberton.load');

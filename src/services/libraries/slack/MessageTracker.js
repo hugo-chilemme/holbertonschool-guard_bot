@@ -3,6 +3,7 @@ const AttachmentDownload = require('./AttachmentDownload');
 const ApiController = require('../../Slack');
 const messagesHistory = require('data-store')({ path: process.cwd() + '/src/databases/slackMessagesHistory.json' });
 const { _sendMessage, _editMessage } = require('../../functions/discordRolesUtils');
+const discord = require('../../../classes/HBClient');
 
 
 class MessageTracker {
@@ -169,8 +170,9 @@ class MessageTracker {
 			.replaceAll('•', '- ')
 			.replaceAll('◦', '◦  ')
 
-		roles.cohorts.forEach(cohort => {
+		discord.cache.getGuild().roles.cache.forEach(cohort => {
 			text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
+
 		});
 
 		const userData = await ApiController('users.profile.get', {user});

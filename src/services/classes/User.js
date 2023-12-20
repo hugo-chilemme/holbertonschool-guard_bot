@@ -15,6 +15,7 @@ class User {
 		this.user.discord_id = member.user.id;
 		this._config();
 		console.log('Holberton ↪', `User ${this.user.id} added`);
+
 	}
 
 	_config() {

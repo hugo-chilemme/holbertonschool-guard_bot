@@ -3,6 +3,7 @@ const AttachmentDownload = require('./AttachmentDownload');
 const ApiController = require('../../Slack');
 const messagesHistory = require('data-store')({ path: process.cwd() + '/src/databases/slackMessagesHistory.json' });
 const { _sendMessage, _editMessage } = require('../../functions/discordRolesUtils');
+const discord = require('../../../classes/HBClient');
 
 
 class MessageTracker {
@@ -130,18 +131,24 @@ class MessageTracker {
 
 		const regex = /<@U[0-9A-Z]+>/g;
         const userPinneds = text.match(regex) || [];
+		const users = discord.cache.getUsers();
 
 		for (const mention of userPinneds)
 		{
 			const id = mention.substring(2, mention.length - 1);
-			const user = await holberton.getUserBySlackId(id);
-			if (user)
+			const userData = await ApiController('users.profile.get', {user: id});
+			const { profile } = userData;
+			if (profile.email && profile.email.split('@')[0].length === 4)
 			{
-				if (user.discord_id)
-					text = text.replaceAll(mention, `<@${user.discord_id}>`);
-				else
-					text = text.replaceAll(mention, `${user.first_name} ${user.last_name}`);
+
+				const user = users.get(parseInt(profile.email.split('@')[0]));
+				if (user && user.member)
+				{
+					text = text.replaceAll(mention, `<@${user.member.user.id}>`);
+					continue;
+				}
 			}
+			text = text.replaceAll(mention, `${profile.display_name}`);
 		}
 
 		// Expression régulière pour rechercher tous les liens dans le texte
@@ -169,7 +176,7 @@ class MessageTracker {
 			.replaceAll('•', '- ')
 			.replaceAll('◦', '◦  ')
 
-		roles.cohorts.forEach(cohort => {
+		discord.cache.get('guild').roles.cache.forEach(cohort => {
 			text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
 		});
 

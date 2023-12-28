@@ -1,5 +1,6 @@
 const discord = require("../classes/HBClient");
 const { joinVoiceChannel } = require('@discordjs/voice');
+const { _sendMessage, _editMessage } = require('../services/functions/discordRolesUtils');
 
 module.exports = async () => {
 	try {
@@ -10,6 +11,7 @@ module.exports = async () => {
 			adapterCreator: guild.voiceAdapterCreator
 		});
 		console.log(`Discord ↪ Joined voice channel`);
+
 	} catch (error) {
 		console.error(`Discord ↪ Unable to join voice channel. ${error.message}`);
 	};

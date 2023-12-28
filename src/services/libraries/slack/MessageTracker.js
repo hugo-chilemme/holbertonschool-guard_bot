@@ -143,12 +143,10 @@ class MessageTracker {
 
 				const user = users.get(parseInt(profile.email.split('@')[0]));
 				if (user && user.member)
-				{
 					text = text.replaceAll(mention, `<@${user.member.user.id}>`);
-					continue;
-				}
+				else
+					text = text.replaceAll(mention, `${profile.display_name}`);
 			}
-			text = text.replaceAll(mention, `${profile.display_name}`);
 		}
 
 		// Expression régulière pour rechercher tous les liens dans le texte
@@ -174,16 +172,18 @@ class MessageTracker {
 			.replaceAll(/ \*([^*]+)\*/g, ' **$1**')
 			.replaceAll(/ _([^_]+)_/g, ' *$1*')
 			.replaceAll('•', '- ')
-			.replaceAll('◦', '◦  ')
+			.replaceAll('◦', '◦  ');
 
 		discord.cache.get('guild').roles.cache.forEach(cohort => {
-			text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
+			if (/^C#\d+$/.test(cohort.name)) {
+				text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
+			}
 		});
 
 		const userData = await ApiController('users.profile.get', {user});
 
 		text += `\n[From ${userData.profile.display_name}](https://holberton-school-org.slack.com/team/${user})  •  `;
-		text += `[View original message](https://holberton-school-org.slack.com/archives/${this.channelId}/p${m.ts.replace('.', '')})`
+		text += `[View original message](https://holberton-school-org.slack.com/archives/${this.channelId}/p${m.ts.replace('.', '')})`;
 																										
 
 		return text;

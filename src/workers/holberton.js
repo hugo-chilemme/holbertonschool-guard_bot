@@ -198,7 +198,7 @@ async function handleLoadUsers() {
 		const apiUsers = prepareUsers(usersLinked);
 		const activeCount = refreshUsers(members, apiUsers);
 
-		discord.user.setActivity(`${activeCount} students`, { type: ActivityType.Custom});
+		discord.user.setActivity(`${activeCount} students - holidays mode`, { type: ActivityType.Custom});
 		console.log('Holberton ↪', `${activeCount - Object.keys(apiUsers).length} user(s) not validated`);
 	} catch (error) {
 		console.error(`Holberton ↪ handleLoadUsers() -> ${error.message}`);

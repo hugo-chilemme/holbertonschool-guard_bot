@@ -2,6 +2,7 @@ const { ChannelType } = require('discord.js');
 const voices = require('data-store')({ path: process.cwd() + '/src/databases/discordVoices.json' });
 
 module.exports = async (_, oldState, newState) => {
+
 	if (oldState.channelId) {
 		const voice = voices.get(oldState.channelId);
 		if (!voice)

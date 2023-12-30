@@ -201,8 +201,8 @@ async function handleLoadUsers() {
 		const invalidated = Object.keys(apiUsers).length;
 		const invalidCount = activeCount - invalidated;
 
-		discord.user.setActivity(`${activeCount} students`, { type: ActivityType.Custom});
-		console.log('Holberton ↪', `${invalidCount} user(s) not validated`);
+		discord.user.setActivity(`${activeCount} students - holidays mode`, { type: ActivityType.Custom});
+		console.log('Holberton ↪', `${activeCount - Object.keys(apiUsers).length} user(s) not validated`);
 	} catch (error) {
 		console.error(`Holberton ↪ handleLoadUsers() -> ${error.message}`);
 		discord.user.setActivity('Some errors detected', { type: ActivityType.Custom });

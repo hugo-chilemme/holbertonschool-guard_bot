@@ -64,6 +64,10 @@ module.exports = async (client, interaction) => {
     };
 
     if (interaction.isStringSelectMenu()) {
+        if (interaction.values[0] === 'no_value') {
+            await interaction.reply({ content: "La sélection a été annulée.🔋", ephemeral: true });
+            return;
+        };
         EventService.emit("stringSelectMenuAction", {
             menu_id: interaction.customId,
             value: interaction.values,

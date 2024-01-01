@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits, Partials, Events, Collection } = require('discord.js');
-const { DISCORD_TOKEN, GUILD_ID } = require('../config');
+const { DISCORD_TOKEN } = require('../config');
 const ClientData = require('./ClientData');
 
 /**

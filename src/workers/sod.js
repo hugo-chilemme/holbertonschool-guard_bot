@@ -58,6 +58,7 @@ async function handleGenerateSod() {
 	if (notGoodDay) return;
 
 	const users = discord.cache.getUsers();
+
 	const filteredUsers = Array.from(users).filter(([id, user]) => {
 		return user.isActive && user.cohortStatus === 'fundamental'
 	});
@@ -67,6 +68,9 @@ async function handleGenerateSod() {
 	const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 	const frenchDate = dateInTwoWeeks.toLocaleDateString('fr-FR', options);
 
+	let displayUser = selectedUser.member ? `<@${selectedUser.member.user.id}>` : `${selectedUser.user.first_name} ${selectedUser.user.last_name}`;
+	let message = await _sendMessage('1171027614169833502', `<@${selectedUser.member.user.id}> passera au Speaker Of The Day (SOD) du ${frenchDate}.`);
+
 	sodHistory.set(dateInTwoWeeks.toDateString(), { 
 		user: selectedUser.user.id, 
 		reminder: {
@@ -75,24 +79,10 @@ async function handleGenerateSod() {
 		}, 
 		message_id: message.id
 	});
-	
-	let message;
-	if (selectedUser.member)
-	{
-		// selectedUser.member.send(`Vous avez été choisi(e) pour effectuer le Speaker Of the Day (SOD) du ${frenchDate}. Veuillez la préparer avant la date prévue au cas où il y aurait un désistement.`);
-		message = await _sendMessage('1171027614169833502', `<@${selectedUser.member.user.id}> passera au Speaker Of The Day (SOD) du ${frenchDate}.`);
-	}
-	else
-	{
-		message = await _sendMessage('1171027614169833502', `${selectedUser.user.first_name} ${selectedUser.user.last_name} passera au Speaker Of The Day (SOD) du ${frenchDate}.`);
-	}
-
-
 
 }
 
 discord.on('ready', async () => {
 	// _sendMessage('1143262201889689713', '<@476557394944458754> has been duly notified: excessive mention.');
-	handleGenerateSod();
 	setInterval(handleGenerateSod, 15000);
 });

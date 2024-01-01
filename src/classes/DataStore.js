@@ -33,8 +33,8 @@ module.exports = class DataStore extends Store {
 	 * @param {string} type
 	 */
 	constructor(name, type = 'json') {
-		super(`${DataStore.path}\\src\\databases\\${name}.${type}`);
-		this.path = `${DataStore.path}\\src\\databases\\${name}.${type}`;
+		super(`${DataStore.path}/src/databases/${name}.${type}`);
+		this.path = `${DataStore.path}/src/databases/${name}.${type}`;
 		this.name = name;
 		this.type = type;
 		if (!existsSync(this.path)) {

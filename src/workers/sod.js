@@ -20,12 +20,12 @@ function checkReminderSod (addDay) {
 	if (isReadySent) return;
 
 	sod.reminder[typeVar] = true;
-	
+
 	sodHistory.set(dateString, sod);
 
 	const user = discord.cache.getUsers().get(sod.user);
 	if (!user || !user.member) return;
-	
+
 	const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 	const frenchDate = date.toLocaleDateString('fr-FR', options);
 
@@ -38,14 +38,14 @@ function checkReminderSod (addDay) {
 
 function checkReminder () {
 
-	checkReminderSod(7); 
-	checkReminderSod(1); 
+	checkReminderSod(7);
+	checkReminderSod(1);
 }
 
 
 async function handleGenerateSod() {
 	const dateToday = new Date();
-	
+
 	const dateInTwoWeeks = new Date();
 	dateInTwoWeeks.setDate(dateToday.getDate() + 14);
 
@@ -53,7 +53,7 @@ async function handleGenerateSod() {
 	const isReadyInDatabase = sodHistory.has(dateInTwoWeeks.toDateString());
 
 	checkReminder();
-	
+
 	if (isReadyInDatabase) return;
 	if (notGoodDay) return;
 
@@ -63,19 +63,19 @@ async function handleGenerateSod() {
 	});
 	const randomIndex = Math.floor(Math.random() * filteredUsers.length);
 	const [selectedId, selectedUser] = filteredUsers[randomIndex];
-	
+
 	const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 	const frenchDate = dateInTwoWeeks.toLocaleDateString('fr-FR', options);
 
-	sodHistory.set(dateInTwoWeeks.toDateString(), { 
-		user: selectedUser.user.id, 
+	sodHistory.set(dateInTwoWeeks.toDateString(), {
+		user: selectedUser.user.id,
 		reminder: {
 			week: false,
 			day: false
-		}, 
+		},
 		message_id: message.id
 	});
-	
+
 	let message;
 	if (selectedUser.member)
 	{
@@ -92,6 +92,7 @@ async function handleGenerateSod() {
 }
 
 discord.on('ready', async () => {
+	if (process.env.NODE_ENV === 'development') return;
 	// _sendMessage('1143262201889689713', '<@476557394944458754> has been duly notified: excessive mention.');
 	handleGenerateSod();
 	setInterval(handleGenerateSod, 15000);

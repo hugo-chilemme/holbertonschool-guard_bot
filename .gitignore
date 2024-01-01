@@ -7,4 +7,4 @@ yarn-error.log
 package-lock.json
 #ENV
 .env
-src/databases/
+databases/

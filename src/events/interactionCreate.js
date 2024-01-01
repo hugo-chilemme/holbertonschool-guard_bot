@@ -1,6 +1,7 @@
-const { Interaction, SlashCommandSubcommandBuilder, CommandInteraction } = require("discord.js");
-const Command = require("../classes/Command");
+const { Interaction, SlashCommandSubcommandBuilder } = require("discord.js");
 const SubCommand = require("../classes/SubCommand");
+const EventService = require("../services/EventService");
+const Command = require("../classes/Command");
 
 /**
  *
@@ -28,36 +29,55 @@ function handleSubCommand(command, interaction) {
 /**
  * Listen for interaction events
  * @param {HBClient} client
- * @param {CommandInteraction} interaction
- * @returns
+ * @param {Interaction} interaction
  */
 module.exports = async (client, interaction) => {
-	if (!interaction.isChatInputCommand()) return;
+	if (interaction.isChatInputCommand())
+    {
+        try {
+            await interaction.deferReply({ ephemeral: true, fetchReply: true });
+        } catch (error) {
+            console.error(`Error while deferring reply: ${error.message}`);
+            return;
+        };
 
-    try {
-        await interaction.deferReply({ ephemeral: true, fetchReply: true });
-    } catch (error) {
-        console.error(`Error while deferring reply: ${error.message}`);
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command || !command instanceof Command) {
+            console.error(`No command matching ${interaction.commandName} was found.`);
+            await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+            return;
+        };
+
+        try {
+            if(handleSubCommand(command, interaction))
+                return;
+            await command.callback(interaction);
+        } catch (error) {
+            console.error(error.message);
+            if (interaction.replied || interaction.deferred)
+                await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+            else
+                await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+        };
         return;
     };
 
-	const command = client.commands.get(interaction.commandName);
-
-	if (!command || !command instanceof Command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+    if (interaction.isStringSelectMenu()) {
+        EventService.emit("stringSelectMenuAction", {
+            menu_id: interaction.customId,
+            value: interaction.values,
+            interaction: interaction,
+        });
         return;
-	};
+    };
 
-	try {
-        if(handleSubCommand(command, interaction))
-            return;
-		await command.callback(interaction);
-	} catch (error) {
-		console.error(error.message);
-		if (interaction.replied || interaction.deferred)
-			await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
-		else
-			await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
-	};
+    if (interaction.isButton()) {
+        EventService.emit("buttonClick", {
+            button_id: interaction.customId,
+            interaction: interaction,
+        });
+        return;
+    };
+
 };

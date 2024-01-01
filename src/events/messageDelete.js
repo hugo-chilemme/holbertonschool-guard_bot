@@ -1,5 +1,6 @@
 const { Message, ChannelType, AuditLogEvent } = require('discord.js');
 const EmbedLog = require('../classes/EmbedLog');
+const DataStore = require('../classes/DataStore');
 
 /**
  * Listen for message remove events

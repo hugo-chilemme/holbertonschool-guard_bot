@@ -85,7 +85,6 @@ EventService.on('stringSelectMenuAction', async data => {
 		).setThumbnail(user.avatarURL());
 		await EmbedLog.LOG_CHANNEL.send({embeds: [log_embed]});
 	} catch (err) {
-		await interaction.reply({ content: `Impossible de créer le ticket pour le moment, réessayez plus tard.`, ephemeral: true });
 		console.error(`Discord ↪ Error while handling button: ${err.message}`);
 	};
 });
@@ -116,13 +115,20 @@ EventService.on('buttonClick', async data => {
 				delete cache[ticket_author.id];
 				store.set("cache", cache);
 				setTimeout(async () => {
-					await interaction.channel.delete();
-					const embed = new EmbedLog(
-						`Ticket Closed`,
-						`Ticket of (**${author_name}**, **${ticket_author.id}**) closed by (**${member_name}**, **${user.id}**)`,
-						EmbedLog.Colors.DarkRed
-					).setThumbnail(user.avatarURL());
-					await EmbedLog.LOG_CHANNEL.send({embeds: [embed]});
+					try {
+						const archive_category = interaction.guild.channels.cache.get(process.env.TICKET_ARCHIVE);
+						if (!archive_category) return await interaction.reply({ content: 'Impossible de fermer le ticket pour le moment, réessayez plus tard.', ephemeral: true });
+						await interaction.channel.permissionOverwrites.edit(ticket_author.id, {deny: [PermissionFlagsBits.ViewChannel]});
+						await interaction.channel.setParent(archive_category);
+						const embed = new EmbedLog(
+							`Ticket Closed`,
+							`Ticket of (**${author_name}**, **${ticket_author.id}**) closed by (**${member_name}**, **${user.id}**)`,
+							EmbedLog.Colors.DarkRed
+						).setThumbnail(user.avatarURL());
+						await EmbedLog.LOG_CHANNEL.send({embeds: [embed]});
+					} catch (err) {
+						console.error(`Discord ↪ Error while closing ticket: ${err.message}`);
+					};
 				}, 5000);
 			};
 		} catch (err) {

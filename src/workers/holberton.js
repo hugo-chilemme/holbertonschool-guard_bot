@@ -112,9 +112,14 @@ function hasPrivileges(member) {
  * @returns {GuildMember}
  */
 function getMemberByUserTag(user) {
-	return discord.cache.getMembers().find(member =>
-		member.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
-	);
+	try {
+		return discord.cache.getMembers().find(member =>
+			member.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
+		);
+	} catch(e) {
+		console.error(e);
+		return undefined;
+	}
 };
 
 

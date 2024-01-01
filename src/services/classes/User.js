@@ -43,7 +43,7 @@ class User {
 		this.help_experience = this._setExperience(this.user.cache.help_experience);
 
 		this._synchronization();
-		this._celebrateBirthday();
+		setInterval(() => this._celebrateBirthday(), 60000); 
 
 	}
 

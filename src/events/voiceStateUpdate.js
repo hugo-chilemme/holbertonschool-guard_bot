@@ -36,11 +36,12 @@ module.exports = async (_, oldState, newState) => {
 
 	const member = newState.member;
 	const isChannelCreator = newState.channelId === config.CHANNEL_CREATION_VOICE;
+	const isBot = member.user.bot;
 
 	const newChannelName = `🎙️・${member.nickname}`;
 	const AttrChannelCategory = config.CATEGORY_TEMPORARY_CHANNEL;
 
-	if (!isChannelCreator)
+	if (!isChannelCreator || isBot)
 		return;
 
 	const newTemporaryChannel = await guild.channels.create({

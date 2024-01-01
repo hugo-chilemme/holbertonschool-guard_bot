@@ -178,6 +178,7 @@ class MessageTracker {
 			if (/^C#\d+$/.test(cohort.name)) {
 				text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
 			}
+
 		});
 
 		const userData = await ApiController('users.profile.get', {user});

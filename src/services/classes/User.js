@@ -15,7 +15,6 @@ class User {
 		this.user.discord_id = member.user.id;
 		this._config();
 		console.log('Holberton ↪', `User ${this.user.id} added`);
-
 	}
 
 	_config() {
@@ -31,6 +30,7 @@ class User {
 				`${this.cohortStatus} ${this.isActive ? 'active' : 'inactive'}`,
 				`and ${this.isAlternating ? 'alternating' : 'not alternating'}`
 			);
+
 
 		if (this.cohortStatus === 'fundamental' && this.cohortName !== this.user.cache.fundamental_cohort)
 			ApiController(`users/${this.user.id}/set`, {fundamental_cohort: this.cohortName});

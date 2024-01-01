@@ -1,5 +1,3 @@
-const mode = 'production'; //development | production
-require('dotenv').config({path: process.cwd() + (mode == 'production' ? '/.env' : '/.devenv')});
-process.env.NODE_ENV = mode;
+require('dotenv').config({path: process.cwd() + ('/.env')});
 
 module.exports = process.env;

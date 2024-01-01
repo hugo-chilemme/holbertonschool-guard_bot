@@ -1,5 +1,6 @@
 const Command = require("../classes/Command");
 const SubCommand = require("../classes/SubCommand");
+const EmbedLog = require("../classes/EmbedLog");
 const {
 	PermissionFlagsBits,
 	ChannelType,
@@ -77,22 +78,35 @@ module.exports = new Command(
 						.addChannelTypes(ChannelType.GuildVoice)
 				),
 			async interaction => {
-				let disconnected = 0;
-				/** @type {VoiceChannel} */
-				const channel = interaction.options.getChannel("channel");
-				if (!channel) return interaction.followUp({ content: "Le salon n'existe pas.", ephemeral: true });
-				if (channel.type != ChannelType.GuildVoice) return interaction.followUp({ content: "Le salon doit être un salon vocal.", ephemeral: true });
-				if (channel.members.size == 0) return interaction.followUp({ content: "Le salon est vide.", ephemeral: true });
+				try {
+					let disconnected = 0;
+					/** @type {VoiceChannel} */
+					const channel = interaction.options.getChannel("channel");
+					if (!channel) return interaction.followUp({ content: "Le salon n'existe pas.", ephemeral: true });
+					if (channel.type != ChannelType.GuildVoice) return interaction.followUp({ content: "Le salon doit être un salon vocal.", ephemeral: true });
+					if (channel.members.size == 0) return interaction.followUp({ content: "Le salon est vide.", ephemeral: true });
 
-				for (const member of channel.members.values())
-					if (!member.permissions.has(PermissionFlagsBits.Administrator))
-						try {
-							await member.voice.disconnect("Voice clear command executed by " + interaction.user.tag);
-							disconnected++;
-						} catch (error) {
-							console.error(`Discord  ↪ Unable to disconnect member (${member.tag}, ${member.id}) from voice channel (${channel.name}, ${channel.id})`);
-						};
-				await interaction.followUp({ content: `${disconnected} membres ${disconnected == 1 ? "a" : "ont"} été expulsés du channel ${channel}. ✔️`, ephemeral: true });
+					for (const member of channel.members.values())
+						if (!member.permissions.has(PermissionFlagsBits.Administrator))
+							try {
+								await member.voice.disconnect("Voice clear command executed by " + interaction.user.tag);
+								disconnected++;
+							} catch (error) {
+								console.error(`Discord  ↪ Unable to disconnect member (${member.tag}, ${member.id}) from voice channel (${channel.name}, ${channel.id})`);
+							};
+					if (disconnected > 0) {
+						const embed = new EmbedLog(
+							"Voice Command Log",
+							`Channel ${channel} has been cleared by ${interaction.member}\nMembers cleared: ${disconnected}`
+						);
+						embed.setThumbnail(interaction.user.displayAvatarURL());
+						await EmbedLog.LOG_CHANNEL.send({ embeds: [embed] });
+					};
+					await interaction.followUp({ content: `${disconnected} membres ${disconnected == 1 ? "a" : "ont"} été expulsés du channel ${channel}. ✔️`, ephemeral: true });
+				} catch (error) {
+					console.error(`Discord  ↪ Unable to execute commande voice clear. ${error.message}`);
+					await interaction.followUp({ content: `Impossible de vider le salon. ❌`, ephemeral: true });
+				};
 			}
 		),
 		new SubCommand(
@@ -118,6 +132,12 @@ module.exports = new Command(
 						false
 					);
 					if (hasSetChannel) {
+						const embed = new EmbedLog(
+							"Voice Command Log",
+							`Channel ${channel} has been locked by ${interaction.member}`
+						);
+						embed.setThumbnail(interaction.user.displayAvatarURL());
+						await EmbedLog.LOG_CHANNEL.send({ embeds: [embed] });
 						await channel.send({ content: `Le salon a été verrouillé par ${interaction.member}` });
 						await interaction.followUp({ content: `Le salon ${channel} a été verrouillé. ✔️`, ephemeral: true });
 					};
@@ -149,6 +169,12 @@ module.exports = new Command(
 						true
 					);
 					if (hasSetChannel) {
+						const embed = new EmbedLog(
+							"Voice Command Log",
+							`Channel ${channel} has been unlocked by ${interaction.member}`
+						);
+						embed.setThumbnail(interaction.user.displayAvatarURL());
+						await EmbedLog.LOG_CHANNEL.send({ embeds: [embed] });
 						await channel.send({ content: `Le salon a été déverrouillé par ${interaction.member}` });
 						await interaction.followUp({ content: `Le salon ${channel} a été déverrouillé. ✔️`, ephemeral: true });
 					};
@@ -175,26 +201,39 @@ module.exports = new Command(
 						.addChannelTypes(ChannelType.GuildVoice)
 				),
 			async interaction => {
-				let moved = 0;
-				/** @type {VoiceChannel} */
-				const from = interaction.options.getChannel("from");
-				/** @type {VoiceChannel} */
-				const to = interaction.options.getChannel("to");
-				if (!from) return interaction.followUp({ content: "Le salon source n'existe pas.", ephemeral: true });
-				if (!to) return interaction.followUp({ content: "Le salon destination n'existe pas.", ephemeral: true });
-				if (from.type != ChannelType.GuildVoice || to.type != ChannelType.GuildVoice)
-					return interaction.followUp({ content: "Les salons doivent être des salons vocaux.", ephemeral: true });
-				if (from.members.size == 0) return interaction.followUp({ content: "Le salon source est vide.", ephemeral: true });
+				try {
+					let moved = 0;
+					/** @type {VoiceChannel} */
+					const from = interaction.options.getChannel("from");
+					/** @type {VoiceChannel} */
+					const to = interaction.options.getChannel("to");
+					if (!from) return interaction.followUp({ content: "Le salon source n'existe pas.", ephemeral: true });
+					if (!to) return interaction.followUp({ content: "Le salon destination n'existe pas.", ephemeral: true });
+					if (from.type != ChannelType.GuildVoice || to.type != ChannelType.GuildVoice)
+						return interaction.followUp({ content: "Les salons doivent être des salons vocaux.", ephemeral: true });
+					if (from.members.size == 0) return interaction.followUp({ content: "Le salon source est vide.", ephemeral: true });
 
-				for (const member of from.members.values())
-					if (!member.permissions.has(PermissionFlagsBits.Administrator))
-						try {
-							await member.voice.setChannel(to, "Voice moveall command executed by " + interaction.user.tag);
-							moved++;
-						} catch (error) {
-							console.error(`Discord  ↪ Unable to move member (${member.tag}, ${member.id}) from voice channel (${from.name}, ${from.id}) to (${to.name}, ${to.id})`);
-						};
-				await interaction.followUp({ content: `${moved} membres ${moved == 1 ? "a" : "ont"} été déplacés du channel ${from} vers ${to}. ✔️`, ephemeral: true });
+					for (const member of from.members.values())
+						if (!member.permissions.has(PermissionFlagsBits.Administrator))
+							try {
+								await member.voice.setChannel(to, "Voice moveall command executed by " + interaction.user.tag);
+								moved++;
+							} catch (error) {
+								console.error(`Discord  ↪ Unable to move member (${member.tag}, ${member.id}) from voice channel (${from.name}, ${from.id}) to (${to.name}, ${to.id})`);
+							};
+					if (moved > 0) {
+						const embed = new EmbedLog(
+							"Voice Command Log",
+							`Channel members of ${from} moved to ${to} by ${interaction.member}\nMembers moved: ${moved}`
+						);
+						embed.setThumbnail(interaction.user.displayAvatarURL());
+						await EmbedLog.LOG_CHANNEL.send({ embeds: [embed] });
+					};
+					await interaction.followUp({ content: `${moved} membres ${moved == 1 ? "a" : "ont"} été déplacés du channel ${from} vers ${to}. ✔️`, ephemeral: true });
+				} catch (error) {
+					console.error(`Discord  ↪ Unable to execute commande voice moveall. ${error.message}`);
+					await interaction.followUp({ content: `Impossible de déplacer les membres. ❌`, ephemeral: true });
+				};
 			}
 		)
 	]

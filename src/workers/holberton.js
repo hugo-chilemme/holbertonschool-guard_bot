@@ -112,9 +112,14 @@ function hasPrivileges(member) {
  * @returns {GuildMember}
  */
 function getMemberByUserTag(user) {
-	return discord.cache.getMembers().find(member =>
-		member.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
-	);
+	try {
+		return discord.cache.getMembers().find(member =>
+			member.user.username.toLowerCase() === user.discord_tag.split('#')[0].toLowerCase()
+		);
+	} catch(e) {
+		console.error(e);
+		return undefined;
+	}
 };
 
 
@@ -195,8 +200,11 @@ async function handleLoadUsers() {
 		/* Store users with valid discord tag */
 		const usersLinked = users.filter(user => user.discord_tag);
 		console.log('Holberton ↪', `${usersLinked.length} user(s) received`);
+
 		const apiUsers = prepareUsers(usersLinked);
 		const activeCount = refreshUsers(members, apiUsers);
+		const invalidated = Object.keys(apiUsers).length;
+		const invalidCount = activeCount - invalidated;
 
 		discord.user.setActivity(`${activeCount} students - holidays mode`, { type: ActivityType.Custom});
 		console.log('Holberton ↪', `${activeCount - Object.keys(apiUsers).length} user(s) not validated`);

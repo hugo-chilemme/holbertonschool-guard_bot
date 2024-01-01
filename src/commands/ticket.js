@@ -31,6 +31,15 @@ async function createButtons(channel, interaction) {
 	const categories = store.get("categories");
 	const data = [];
 
+	data.push(
+		new StringSelectMenuOptionBuilder({
+			label: "🛑 Aucune option.",
+			description: "Permet de désélectionner toutes les options.",
+			//default: true,
+			value: "no_value"
+		})
+	);
+
 	for (const name of Object.keys(categories))
 	{
 		const value = categories[name];
@@ -61,7 +70,7 @@ async function createButtons(channel, interaction) {
 				.addOptions(data.length > 0 ? data : [
 					new StringSelectMenuOptionBuilder()
 						.setLabel('Aucune catégorie disponible')
-						.setValue('none')
+						.setValue('no_value')
 				])
 		);
 	const row_2 = new ActionRowBuilder()

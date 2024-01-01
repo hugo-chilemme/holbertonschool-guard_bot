@@ -16,11 +16,10 @@ class HBClient extends Client {
 			partials: [
 				Partials.Message,
 				Partials.Channel,
-				Partials.Reaction
+				Partials.Reaction,
+				Partials.GuildScheduledEvent
 			]
 		});
-		console.log('Discord ↪\tIntents ' + this.options.intents);
-		console.log('Discord ↪\tPartials ' + this.options.partials);
 		this.cache = ClientData;
 		this.commands = new Collection();
 		this.cache.set("users", new Collection());

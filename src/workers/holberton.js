@@ -162,7 +162,8 @@ function refreshUsers(members, apiUsers) {
 			let user = apiUsers[tag];
 			if (hasPrivileges(member))
 			{
-				console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
+				if (isDevMode)
+					console.log('Holberton ↪', `${member.user.tag} is ${member.user.bot ? 'bot' : 'admin'}`);
 				active++;
 				continue;
 			};
@@ -199,10 +200,13 @@ async function handleLoadUsers() {
 		/* Store users with valid discord tag */
 		const usersLinked = users.filter(user => user.discord_tag);
 		console.log('Holberton ↪', `${usersLinked.length} user(s) received`);
+
 		const apiUsers = prepareUsers(usersLinked);
 		const activeCount = refreshUsers(members, apiUsers);
+		const invalidated = Object.keys(apiUsers).length;
+		const invalidCount = activeCount - invalidated;
 
-		discord.user.setActivity(`${activeCount} students`, { type: ActivityType.Custom});
+		discord.user.setActivity(`${activeCount} students - holidays mode`, { type: ActivityType.Custom});
 		console.log('Holberton ↪', `${activeCount - Object.keys(apiUsers).length} user(s) not validated`);
 	} catch (error) {
 		console.error(`Holberton ↪ handleLoadUsers() -> ${error.message}`);

@@ -7,11 +7,13 @@
     "start": "node src/index.js"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.16.1",
     "axios": "^1.6.2",
     "canvafy": "^7.0.4",
     "data-store": "^4.0.3",
     "discord.js": "^14.11.0",
     "dotenv": "^16.3.1",
+    "libsodium-wrappers": "^0.7.13",
     "node-fetch": "^3.3.2",
     "uuid": "^9.0.1"
   }

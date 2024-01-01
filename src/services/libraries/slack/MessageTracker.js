@@ -131,17 +131,21 @@ class MessageTracker {
 
 		const regex = /<@U[0-9A-Z]+>/g;
         const userPinneds = text.match(regex) || [];
+		const users = discord.cache.getUsers();
 
 		for (const mention of userPinneds)
 		{
 			const id = mention.substring(2, mention.length - 1);
-			const user = await holberton.getUserBySlackId(id);
-			if (user)
+			const userData = await ApiController('users.profile.get', {user: id});
+			const { profile } = userData;
+			if (profile.email && profile.email.split('@')[0].length === 4)
 			{
-				if (user.discord_id)
-					text = text.replaceAll(mention, `<@${user.discord_id}>`);
+
+				const user = users.get(parseInt(profile.email.split('@')[0]));
+				if (user && user.member)
+					text = text.replaceAll(mention, `<@${user.member.user.id}>`);
 				else
-					text = text.replaceAll(mention, `${user.first_name} ${user.last_name}`);
+					text = text.replaceAll(mention, `${profile.display_name}`);
 			}
 		}
 
@@ -168,17 +172,19 @@ class MessageTracker {
 			.replaceAll(/ \*([^*]+)\*/g, ' **$1**')
 			.replaceAll(/ _([^_]+)_/g, ' *$1*')
 			.replaceAll('•', '- ')
-			.replaceAll('◦', '◦  ')
+			.replaceAll('◦', '◦  ');
 
-		discord.cache.getGuild().roles.cache.forEach(cohort => {
-			text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
+		discord.cache.get('guild').roles.cache.forEach(cohort => {
+			if (/^C#\d+$/.test(cohort.name)) {
+				text = text.replaceAll(cohort.name, `<@&${cohort.id}>`);
+			}
 
 		});
 
 		const userData = await ApiController('users.profile.get', {user});
 
 		text += `\n[From ${userData.profile.display_name}](https://holberton-school-org.slack.com/team/${user})  •  `;
-		text += `[View original message](https://holberton-school-org.slack.com/archives/${this.channelId}/p${m.ts.replace('.', '')})`
+		text += `[View original message](https://holberton-school-org.slack.com/archives/${this.channelId}/p${m.ts.replace('.', '')})`;
 																										
 
 		return text;

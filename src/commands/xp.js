@@ -1,8 +1,7 @@
 const Command = require("../classes/Command");
 const SubCommand = require("../classes/SubCommand");
 const discord = require("../classes/HBClient");
-const rankCard = require("../modules/rankCard");
-const leaderboardCard = require("../modules/leaderboardCard");
+const { EmbedBuilder } = require("discord.js");
 
 /**
  * Get user rank card
@@ -17,10 +16,22 @@ async function getUserRankCard(interaction, memberUser) {
 		};
 		const type = interaction.options.getString("type");
 		const data = user[type];
-		const rank = await rankCard(memberUser, data);
-		await interaction.followUp({ files: [rank], ephemeral: true });
+		const typeLabel = type == "message_experience" ? "Holbie" : "Helper";
+		const barSize = 20;
+		let levelBar = '[**' + '#'.repeat(barSize * data.xp / data.next_level_xp) + '-'.repeat(barSize - barSize * data.xp / data.next_level_xp) + '**]';
+		const embed = new EmbedBuilder()
+			.setDescription(`XP de ${memberUser}. Type: **${typeLabel}**\n${levelBar}`)
+			.setFooter({ text: "This is an automated message"})
+			.addFields(
+				{ name: "XP", value: data.xp.toString(), inline: true },
+				{ name: "XP total", value: data.total_xp.toString(), inline: true },
+				{ name: "Niveau", value: data.level.toString(), inline: true },
+				{ name: "XP requis", value: data.next_level_xp.toString(), inline: true },
+				{ name: "Messages", value: data.total_messages.toString(), inline: true }
+			);
+		interaction.followUp({ embeds: [embed], ephemeral: true });
 	} catch (error) {
-		console.error(error.message);
+		console.error(`getUserRankCard() -> ${error.message}`);
 	};
 };
 
@@ -88,8 +99,16 @@ module.exports = new Command(
 						const user = users.get(member.user.id);
 						return user;
 					}).sort((a, b) => b[type].total_xp - a[type].total_xp);
-					const leaderboard = await leaderboardCard(data, type);
-					await interaction.followUp({files: [leaderboard]});
+					const fields = [];
+					const embed = new EmbedBuilder()
+						.setDescription(`Classement des membres (Top 10). Type: **${type == "message_experience" ? "Holbie" : "Helper"}**`)
+						.setFooter({ text: "This is an automated message"});
+					for (let i = 0; i < 10; i++) {
+						const user = data[i];
+						fields.push({name: `Top ${i + 1}.`, value: `${user.member} XP: **${user[type].total_xp}**`, inline: true});
+					};
+					embed.addFields(...fields);
+					await interaction.followUp({embeds: [embed], ephemeral: true});
 				} catch (error) {
 					console.error(error.message);
 				};

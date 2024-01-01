@@ -1,7 +1,6 @@
 const EventService = require('../services/EventService');
 const discord = require('../classes/HBClient');
 const { Events, Guild, Collection } = require('discord.js');
-const config = require('../config');
 
 /**
  * Load and store members from guild
@@ -9,7 +8,13 @@ const config = require('../config');
  * @returns {Promise<Collection<string, GuildMember>>}
  */
 async function loadMembers(guild) {
-	discord.cache.set('members', await guild.members.fetch());
+	try {
+		const members = await guild.members.fetch();
+		discord.cache.set('members', members);
+		return members;
+	} catch (error) {
+		console.log(`Discord ↪ Failed to load members. ${error.message}`);
+	};
 	return discord.cache.getMembers();
 };
 
@@ -18,12 +23,17 @@ async function loadMembers(guild) {
  * @param {Guild} guild
  */
 async function loadRoles(guild) {
-	const roles = await guild.roles.fetch();
-	const cache = new Collection();
-	cache.set('cohorts', roles.filter(role => role.name.match(/^C#\d+$/)));
-	cache.set('specialization', roles.find(role => role.id === config.ROLE_SPECIALIZATION));
-	cache.set('ActiveStudent', roles.find(role => role.id === config.ROLE_ACTIVE_STUDENT));
-	discord.cache.set('roles', cache);
+	try {
+		const roles = await guild.roles.fetch();
+		const cache = new Collection();
+		cache.set('cohorts', roles.filter(role => role.name.match(/^C#\d+$/)));
+		cache.set('specialization', roles.find(role => role.id === process.env.ROLE_SPECIALIZATION));
+		cache.set('ActiveStudent', roles.find(role => role.id === process.env.ROLE_ACTIVE_STUDENT));
+		discord.cache.set('roles', cache);
+		return cache;
+	} catch (error) {
+		console.log(`Discord ↪ Failed to load roles. ${error.message}`);
+	};
 	return discord.cache.getRoles();
 };
 
@@ -31,7 +41,7 @@ async function loadRoles(guild) {
  * Refresh cache
  */
 async function refreshCache() {
-	const guild = discord.guilds.cache.get(config.GUILD_ID);
+	const guild = discord.guilds.cache.get(process.env.GUILD_ID);
 	if (!guild) {
 		console.log('Discord ↪\tConfigured GUILD_ID is invalid.');
 		process.exit(1);
